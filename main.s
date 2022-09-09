@@ -27,18 +27,26 @@ _start:
         @ variavel do while loop
         mov r1, #0
         loop: 
-            CMP r1, #0
-            BNE loopdone            @ condicao de parada
-            GPIOReadRegister pin5   @ ler o pino 5
-            B loop                  @ continua o loop
+            @CMP r1, #0
+            @BNE loopdone            @ condicao de parada
+            @GPIOReadRegister pin5   @ ler o pino 5
+            @B loop                  @ continua o loop
+            nanoSleep
+            GPIOTurnOn pin12
+            nanoSleep
+            GPIOTurnOn pin16
+            add r1, #1
+            CMP, r1, #10
+            BLE loop
 
         loopdone:
-            GPIOTurnOn pin12    @ se quebrar o loop, ligue o led no pino12
-            mov r0, #1          @stdout - escrita no terminal
-            ldr r1, =worked 
-            mov r2, #20         @tamanho da frase
-            mov R7, #4          @ funcao de escrever no linux
-	        svc 0               @ da o controle pro linux chamar a funcao
+            @GPIOTurnOn pin12    @ se quebrar o loop, ligue o led no pino12
+            @mov r0, #1          @stdout - escrita no terminal
+            @ldr r1, =worked 
+            @mov r2, #20         @tamanho da frase
+            @mov R7, #4          @ funcao de escrever no linux
+	        @svc 0               @ da o controle pro linux chamar a funcao
+        
 
 
 _end:
