@@ -5,7 +5,7 @@
 .global _start
 
 _start:
-        mapMem @ mapemaento f
+        mapMem @ mapemaento 
 
         @ Definicao dos pinos como saidas
         GPIODirectionOut pin6
@@ -15,16 +15,30 @@ _start:
         GPIODirectionOut pin21
         GPIODirectionOut pin25
 
+        @ Definicao dos pinos como entradas
+        GPIODirectionIn pin5
+        GPIODirectionIn pin19
+        GPIODirectionIn pin26
+
         @ variavel do while loop
-        mov r1, #0
+        mov r0, #2
         loop:
-            nanoSleep
-            GPIOTurnOff pin6
-            nanoSleep
-            GPIOTurnOn pin6
-            add r1, #1
-            CMP r1, #10
-            BLE loop
+            GPIOReadRegister pin5
+            GPIOReadRegister pin19
+            GPIOReadRegister pin26
+
+            cmp r0, #1
+            beq loopdone
+            bne loop
+
+
+        
+loopdone:
+        nanoSleep
+        GPIOTurnOff pin6
+        nanoSleep
+        GPIOTurnOn pin6
+        b _end
 
 
 _end:
