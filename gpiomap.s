@@ -110,32 +110,34 @@
 
 
 @ Author: A.L
-@ Ler o valor de um pino
-.macro GPIOReadRegister pin
-        mov r2, r8 @ address of gpio regs
-        add r2, #plvlregoffset @ pinlevel offset 000 000 100 000 010 000 000 000 000 100 000 (pinos5, 19 e 26 ativos, por exemplo).
-        ldr r3, =\pin @ base of pin info table
-        add r3, #8 @ add offset for shift amt
-        ldr r3, [r3] @ load shift from table -> queremos saber o valor no pino5 = 5, por exemplo.
-        mov r0, #1 @ 1 bit to shift into pos
-        lsl r0, r3 @ do the shift -> 000 000 000 000 000 000 000 000 000 100 000 
-        and r0, r2 @ -> 000 000 000 000 000 000 000 000 000 100 000 (Filtramos os outros bits, sobrando só o do pino5)
-        lsr r0, r3 @ -> 000 000 000 000 000 000 000 000 000 000 001 = 1 (Desloca o bit do pino para direita) 
+@ Ler o valor de um pino utilizando operações de deslocamento.
+.macro GPIOReadRegisterSlower pin
+        mov r2, r8              @ Endereço dos registradores da GPIO
+        add r2, #plvlregoffset  @ offset para acessar o registrador de pinlvl
+        ldr r2, [r2]            @ pinos5, 19 e 26 ativos, por exemplo -> 000 000 100 000 010 000 000 000 000 100 000 
+        ldr r3, =\pin           @ base dos dados do pino
+        add r3, #8              @ offset para acessar a segunda word  
+        ldr r3, [r3]            @ carrega o valor de deslocamento -> queremos saber o valor no pino5 = 5, por exemplo.
+        mov r0, #1              @ 1 bit para fazer o deslocamento
+        lsl r0, r3              @ desloca esse bit para esquerda n vezes, n = r3 ->  000 000 000 000 000 000 000 000 000 100 000 
+        and r0, r2              @ Filtramos os outros bits, sobrando só o do pino5 -> 000 000 000 000 000 000 000 000 000 100 000 
+        lsr r0, r3              @ Desloca o bit do pino para direita -> 000 000 000 000 000 000 000 000 000 000 001 = 1 
 .endm
 
 @ Author: A.L
-@ Ler o valor de um pino
-.macro GPIOReadRegisterFaster pin
-        mov r2, r8 @ address of gpio regs
-        add r2, #plvlregoffset @ pinlevel offset 000 000 100 000 010 000 000 000 000 100 000 (pinos5, 19 e 26 ativos, por exemplo).
-        ldr r3, =\pin @ base of pin info table
-        add r3, #8 @ add offset for shift amt
-        ldr r3, [r3] @ carrega a posicao do pino -> ex queremos saber o valor no pino5 = 2^5 = 
-        @ 32 = 000 000 000 000 000 000 000 100 000, por exemplo.
-        and r0, r2, r3 @ -> 000 000 000 000 000 000 000 000 000 100 000 (Filtramos os outros bits, sobrando só o do pino5)
-        cmp r0, r3 @ Compara r0 com r3, para saber se o pino esta ativo
-        beq _ligado @  Se r0 == r3, o pino está ativo
-        bne _desligado @ Se r0 !=r3, o pino não esta ativo
+@ Ler o valor de um pino utilizando comparações.
+.macro GPIOReadRegister pin
+        mov r2, r8              @ Endereço dos registradores da GPIO
+        add r2, #plvlregoffset  @ offset para acessar o registrador de pinlvl
+        ldr r2, [r2]            @ pinos5, 19 e 26 ativos, por exemplo -> 000 000 100 000 010 000 000 000 000 100 000
+        ldr r3, =\pin           @ base dos dados do pino
+        add r3, #8              @ offset para acessar a segunda word 
+        ldr r3, [r3]            @ carrega a posicao do pino -> ex queremos saber o valor no pino5 = 2^5 = 
+                                @ 32 = 000 000 000 000 000 000 000 100 000, por exemplo.
+        and r0, r2, r3          @ -> 000 000 000 000 000 000 000 000 000 100 000 (Filtramos os outros bits, sobrando só o do pino5)
+        cmp r0, r3              @ Compara r0 com r3, para saber se o pino esta ativo
+        beq _ligado             @  Se r0 == r3, o pino está ativo
+        bne _desligado          @ Se r0 !=r3, o pino não esta ativo
 .endm
 
 
@@ -173,23 +175,23 @@ gpioaddr: .word 0x20200
 
 pin4: .word 0 @GPFSEL0
         .word 12 @FSEL4
-        .word 4 @ Pino 4 para pin Level
-        @.word 16 @ Pino 4 para pin Level, 2^4=16
+        @.word 4 @ Pino 4 para pin Level
+        .word 16 @ Pino 4 para pin Level, 2^4=16
 
 pin17: .word 4 @GPFSEL1
         .word 21 @FSEL17
-        .word 17 @Pino 17 para pin Level
-        @.word 131072 @ Pino 17 para pin Level, 2^17=131072
+        @.word 17 @Pino 17 para pin Level
+        .word 131072 @ Pino 17 para pin Level, 2^17=131072
 
 pin27: .word 8 @GPFSEL2
         .word 21 @FSEL27
-        .word 27 @Pino 27 para pin Level
-        @.word 134217728 @ Pino 27 para pin Level, 2^27=134217728
+        @.word 27 @Pino 27 para pin Level
+        .word 134217728 @ Pino 27 para pin Level, 2^27=134217728
 
 pin22: .word 8 @GPFSEL2
         .word 6 @FSEL22
-        .word 22 @Pino 22 para pin Level
-        @.word 4194304 @ Pino 22 para pin Level, 2^22=4194304
+        @.word 22 @Pino 22 para pin Level
+        .word 4194304 @ Pino 22 para pin Level, 2^22=4194304
 
 
 
@@ -197,18 +199,18 @@ pin22: .word 8 @GPFSEL2
 
 pin5: .word 0  @ GPFSEL0
         .word 15 @FSEL5
-        .word 5 @Pino 5 para pin Level 
-        @.word 32 @Pino 5 para pin Level, 2^5 = 32 
+        @.word 5 @Pino 5 para pin Level 
+        .word 32 @Pino 5 para pin Level, 2^5 = 32 
 
 pin19: .word 4  @ GPFSEL1
         .word 27 @FSEL19
-        .word 19 @Pino 19 para pin Level 
-        @.word 524288 @Pino 19 para pin Level, 2^19 = 524288 
+        @.word 19 @Pino 19 para pin Level 
+        .word 524288 @Pino 19 para pin Level, 2^19 = 524288 
 
 pin26: .word 8  @ GPFSEL2
         .word 18 @FSEL26
-        .word 26 @ Pino 26 para pin Level
-        @.word 67108864 @ Pino 26 para pin Level, 2^26 = 67108864
+        @.word 26 @ Pino 26 para pin Level
+        .word 67108864 @ Pino 26 para pin Level, 2^26 = 67108864
 
 
 
