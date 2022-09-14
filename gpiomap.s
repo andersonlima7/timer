@@ -9,6 +9,8 @@
 .equ setregoffset, 28 @ SET 0x 7E20 001C = 28
 .equ clrregoffset, 40 @ CLEAR 0x 7E20 0028 = 40
 .equ plvlregoffset, 52 @ PIN LEVEL 0x 7E20 0034 = 52
+.equ pindetectstatus, 64 @ PIN DETECT STATUS 0x 7E20 0040 = 64
+.equ pindetectfalledge, 88 @ Pin Falling Edge Detect 0x 7E20 0058 = 88
 .equ PROT_READ, 1
 .equ PROT_WRITE, 2
 .equ MAP_SHARED, 1
@@ -86,7 +88,7 @@
 
 
 
-.macro GPIOTurnOn pin, value
+.macro GPIOTurnOn pin
          mov r2, r8 @ address of gpio regs
          add r2, #setregoffset @ off to set reg
          mov r0, #1 @ 1 bit to shift into pos
@@ -97,7 +99,7 @@
          str r0, [r2] @ write to the register
 .endm
 
-.macro GPIOTurnOff pin, value
+.macro GPIOTurnOff pin
          mov r2, r8 @ address of gpio regs
          add r2, #clrregoffset @ off set of clr reg
          mov r0, #1 @ 1 bit to shift into pos
@@ -109,7 +111,7 @@
 .endm
 
 
-@ Author: A.L
+
 @ Ler o valor de um pino utilizando operações de deslocamento.
 .macro GPIOReadRegisterSlower pin
         mov r2, r8              @ Endereço dos registradores da GPIO
@@ -124,28 +126,37 @@
         lsr r0, r3              @ Desloca o bit do pino para direita -> 000 000 000 000 000 000 000 000 000 000 001 = 1 
 .endm
 
-@ Author: A.L
+
 @ Ler o valor de um pino utilizando comparações.
 .macro GPIOReadRegister pin
         mov r2, r8              @ Endereço dos registradores da GPIO
         add r2, #plvlregoffset  @ offset para acessar o registrador de pinlvl
-        ldr r2, [r2]            @ pinos5, 19 e 26 ativos, por exemplo -> 000 000 100 000 010 000 000 000 000 100 000
+        ldr r2, [r2]            @ pinos5, 19 e 26 desativados, por exemplo -> 000 001 000 000 100 000 000 000 000 100 000
         ldr r3, =\pin           @ base dos dados do pino
         add r3, #8              @ offset para acessar a segunda word 
         ldr r3, [r3]            @ carrega a posicao do pino -> ex queremos saber o valor no pino5 = 2^5 = 
                                 @ 32 = 000 000 000 000 000 000 000 100 000, por exemplo.
         and r0, r2, r3          @ -> 000 000 000 000 000 000 000 000 000 100 000 (Filtramos os outros bits, sobrando só o do pino5)
-        cmp r0, r3              @ Compara r0 com r3, para saber se o pino esta ativo
-        beq _ligado             @  Se r0 == r3, o pino está ativo
-        bne _desligado          @ Se r0 !=r3, o pino não esta ativo
+        @ cmp r0, r3            @ Compara r0 com r3, para saber se o pino esta ativo
+        @  Se r0 == r3, o pino está desativo
+        @ Se r0 !=r3, o pino está ativo
 .endm
 
 
-_desligado:
-        mov r0, #0 @ O pino nao esta ativo, mov 0 para r0
+.macro print 
+    mov r0, #1 @ 1 = StdOut
+    ldr r1, =string @ string to print
+    mov r2, #13 @ length of our string
+    mov r7, #4 @ linux write system call
+    svc 0 @ Call linux to print
+.endm
 
-_ligado:
-        mov r0, #1 @ O pino esta ativo, mov 1 para r0
+
+@ _desligado:
+@         mov r0, #0 @ O pino nao esta ativo, mov 0 para r0
+
+@ _ligado:
+@         mov r0, #1 @ O pino esta ativo, mov 1 para r0
 
 
 
@@ -154,6 +165,8 @@ _ligado:
 timesec: .word 4
 timenano: .word 000000000
 devmem: .asciz "/dev/mem"
+string: .ascii "Entrou no loop \n "
+
 
 @ mem address of gpio register / 4096
 
@@ -176,7 +189,7 @@ gpioaddr: .word 0x20200
 pin4: .word 0 @GPFSEL0
         .word 12 @FSEL4
         @.word 4 @ Pino 4 para pin Level
-        .word 16 @ Pino 4 para pin Level, 2^4=16
+        .word 16 @ Pino 4 para pin Level, 2^4=16 00000000000000000000000000001000
 
 pin17: .word 4 @GPFSEL1
         .word 21 @FSEL17
@@ -197,11 +210,13 @@ pin22: .word 8 @GPFSEL2
 
 @ Push-buttons
 
+@ Botão para iniciar/parar a contagem
 pin5: .word 0  @ GPFSEL0
         .word 15 @FSEL5
         @.word 5 @Pino 5 para pin Level 
         .word 32 @Pino 5 para pin Level, 2^5 = 32 
 
+@ Botão para resetar a contagem
 pin19: .word 4  @ GPFSEL1
         .word 27 @FSEL19
         @.word 19 @Pino 19 para pin Level 
@@ -216,16 +231,21 @@ pin26: .word 8  @ GPFSEL2
 
 @ Saidas
 
-@ Display LCD
-
-@ E
-pin1: .word 0 @ GPFSEL0
-        .word 3 @FSEL1
-        .word 1 @ pino 1 para SET e CLEAR
 @ LED
 pin6: .word 0 @ GPFSEL0
         .word 18 @FSEL6
         .word 6 @ pino 1 para SET e CLEAR
+@ Display LCD
+
+@ E - Enable, a high to low pulse need to enable the LCD
+@ This pin is used to enable the module when a high to low pulse is given to it. A pulse of 450 ns should be given. 
+@ That transition from HIGH to LOW makes the module ENABLE.
+pin1: .word 0 @ GPFSEL0
+        .word 3 @FSEL1
+        .word 1 @ pino 1 para SET e CLEAR
+
+
+@ Data Pins, Stores the Data to be displayed on LCD or the command instructions
 
 @ D4
 pin12: .word 4 @ GPFSEL1
@@ -247,7 +267,9 @@ pin21: .word 8 @ GPFSEL2
         .word 3 @FSEL21
         .word 21 @ pino 21 para SET e CLEAR
 
-
+@RS - Register Select Pin, RS=0 Command mode, RS=1 Data mode
+@ We need to set it to 1, if we are sending some data to be displayed on LCD. 
+@ And we will set it to 0 if we are sending some command instruction like clear the screen (hex code 01).
 pin25: .word 8 @ GPFSEL2
         .word 15 @FSEL25
         .word 25 @ pino 25 para SET e CLEAR
