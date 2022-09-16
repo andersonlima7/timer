@@ -18,13 +18,7 @@
 .equ sys_mmap2, 192
 
 
-@ Delay
-.macro nanoSleep
-        ldr r0, =timesec
-        ldr r1, =timenano
-        mov r7, #sys_nanosleep
-        svc 0
-.endm
+
 
 @ Macro to map memory for GPIO Registers
 .macro mapMem
@@ -237,44 +231,6 @@ pin6: .word 0 @ GPFSEL0
         .word 6 @ pino 1 para SET e CLEAR
 @ Display LCD
 
-@ E - Enable, a high to low pulse need to enable the LCD
-@ This pin is used to enable the module when a high to low pulse is given to it. A pulse of 450 ns should be given. 
-@ That transition from HIGH to LOW makes the module ENABLE.
-pin1: .word 0 @ GPFSEL0
-        .word 3 @FSEL1
-        .word 1 @ pino 1 para SET e CLEAR
-
-
-@ Data Pins, Stores the Data to be displayed on LCD or the command instructions
-
-@ D4
-pin12: .word 4 @ GPFSEL1
-        .word 6 @FSEL12
-        .word 12 @ pino 12 para SET e CLEAR
-
-@ D5
-pin16: .word 4 @ GPFSEL1
-        .word 18 @FSEL16
-        .word 16 @ pino 16 para SET e CLEAR
-
-@ D6
-pin20: .word 8 @ GPFSEL2
-        .word 0 @FSEL20
-        .word 20 @ pino 20 para SET e CLEAR
-
-@ D7
-pin21: .word 8 @ GPFSEL2
-        .word 3 @FSEL21
-        .word 21 @ pino 21 para SET e CLEAR
-
-@RS - Register Select Pin, RS=0 Command mode, RS=1 Data mode
-@ We need to set it to 1, if we are sending some data to be displayed on LCD. 
-@ And we will set it to 0 if we are sending some command instruction like clear the screen (hex code 01).
-pin25: .word 8 @ GPFSEL2
-        .word 15 @FSEL25
-        .word 25 @ pino 25 para SET e CLEAR
-
-.text
 
 
 
