@@ -7,6 +7,8 @@
 .global _start
 
 
+
+
 _start:
         mapMem @ mapemaento
 
@@ -16,29 +18,32 @@ _start:
         GPIODirectionIn pin26
 
         @ variavel do loop
+        clearLCD
         mov r6, #9
+        WriteOnDisplay r6
         loop:
             nanoSleep time1s
-            clearLCD
             GPIOReadRegister pin5
             cmp r0, r3
             bne count
+
+            @ Reinicia o programa
+            GPIOReadRegister pin26
+            cmp r0, r3
+            bne _start
 
             @ Termina o programa
             GPIOReadRegister pin19
             cmp r0, r3
             bne loopdone
+            b loop
 
-resetCounter:
-       mov r6, #9
-       b loop
 
 @ Reinicia o contador
-
 .macro reset
        GPIOReadRegister pin26
        cmp r0, r3
-       bne resetCounter
+       bne _start
 .endm
 
 .macro stop
@@ -50,13 +55,14 @@ resetCounter:
 @ Contador
 count:
         nanoSleep time1s
-        WriteNumber [r6]
+        clearLCD
+        WriteOnDisplay r6
         reset
         stop
         sub r6, #1
         cmp r6, #0
         bge count
-        b loopdone
+        b loop
 
 @ Pausa o contador
 

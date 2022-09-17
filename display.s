@@ -99,103 +99,95 @@
 .endm
 
 
-.macro WriteData value
-        @ r1 - Pino
-        @ r2 - Bit que determina se deve ligar ou desligar o pino 
-        @ value - Código de 8 bits do char.
-        @ Pode substituir pelo macro digits
+@ .macro WriteData value
+@         @ r1 - Pino
+@         @ r2 - Bit que determina se deve ligar ou desligar o pino 
+@         @ value - Código de 8 bits do char.
+@         @ Pode substituir pelo macro digits
 
-        @ D7 D6 D5 D4
+@         @ D7 D6 D5 D4
 
-        @ D4
-        ldr r1, D4
-        mov r2, #16 @0b00010000
-        and r2, value
-        lsr r2, #4      @ Desloca o bit 4x para direita  
-        cmp r2, #1
-        bleq GPIOTurnLCDPinOn
-        blne GPIOTurnLCDPinOff
-        @ D5
-        ldr r1, D5
-        mov r2, #32 @0b00100000
-        and r2, value
-        lsr r2, #5      @ Desloca o bit 5x para direita  
-        cmp r2, #1
-        bleq GPIOTurnLCDPinOn
-        blne GPIOTurnLCDPinOff
-        @ D6
-        ldr r1, D6
-        mov r2, #64 @0b01000000
-        and r2, value
-        lsr r2, #6      @ Desloca o bit 6x para direita  
-        cmp r2, #1
-        bleq GPIOTurnLCDPinOn
-        blne GPIOTurnLCDPinOff
-        @ D7
-        ldr r1, D7
-        mov r2, #128 @0b10000000
-        and r2, value
-        lsr r2, #7      @ Desloca o bit 7x para direita  
-        cmp r2, #1
-        bleq GPIOTurnLCDPinOn
-        blne GPIOTurnLCDPinOff
-        @ RS
-        GPIOTurnOn RS
-        enable
+@         @ D4
+@         ldr r1, =D4
+@         mov r2, #16 @0b00010000
+@         @and r2, r6
+@         lsr r2, #4      @ Desloca o bit 4x para direita  
+@         cmp r2, #1
+@         bleq GPIOTurnLCDPinOn
+@         blne GPIOTurnLCDPinOff
+@         @ D5
+@         ldr r1, =D5
+@         mov r2, #32 @0b00100000
+@         @and r2, r6
+@         lsr r2, #5      @ Desloca o bit 5x para direita  
+@         cmp r2, #1
+@         bleq GPIOTurnLCDPinOn
+@         blne GPIOTurnLCDPinOff
+@         @ D6
+@         ldr r1, =D6
+@         mov r2, #64 @0b01000000
+@         @and r2, r6
+@         lsr r2, #6      @ Desloca o bit 6x para direita  
+@         cmp r2, #1
+@         bleq GPIOTurnLCDPinOn
+@         blne GPIOTurnLCDPinOff
+@         @ D7
+@         ldr r1, =D7
+@         mov r2, #128 @0b10000000
+@         @and r2, r6
+@         lsr r2, #7      @ Desloca o bit 7x para direita  
+@         cmp r2, #1
+@         bleq GPIOTurnLCDPinOn
+@         blne GPIOTurnLCDPinOff
+@         @ RS
+@         GPIOTurnOn RS
+@         enable
 
 
-       @ D7 D6 D5 D4
+@        @ D7 D6 D5 D4
 
-        @ D4 
-        ldr r1, D4
-        mov r2, #1      @0b00000001   
-        and r2, value   @0001 & 0011 -> 0001 
-        cmp r2, #1  
-        bleq GPIOTurnLCDPinOn
-        blne GPIOTurnLCDPinOff
+@         @ D4 
+@         ldr r1, D4
+@         mov r2, #1      @0b00000001   
+@         @and r2, r6   @0001 & 0011 -> 0001 
+@         cmp r2, #1  
+@         bleq GPIOTurnLCDPinOn
+@         blne GPIOTurnLCDPinOff
 
-        @ D5
-        ldr r1, D5
-        mov r2, #2      @0b00000010
-        and r2, value   @ 0010 & 0011 -> 0010
-        lsr r2, #1      @ Desloca o bit 1x para direita  -> 0001            
-        cmp r2, #1    
-        bleq GPIOTurnLCDPinOn
-        blne GPIOTurnLCDPinOff
-        @ D6
+@         @ D5
+@         ldr r1, D5
+@         mov r2, #2      @0b00000010
+@         @and r2, r6   @ 0010 & 0011 -> 0010
+@         lsr r2, #1      @ Desloca o bit 1x para direita  -> 0001            
+@         cmp r2, #1    
+@         bleq GPIOTurnLCDPinOn
+@         blne GPIOTurnLCDPinOff
+@         @ D6
 
-        ldr r1, D6
-        mov r2, #4      @0b0000100
-        and r2, value   @ 0100 & 0101 -> 0100
-        lsr r2, #2      @ Desloca o bit 2x para direita  -> 0001 
-        cmp r2, #1
-        bleq GPIOTurnLCDPinOn
-        blne GPIOTurnLCDPinOff
-        @ D7
+@         ldr r1, D6
+@         mov r2, #4      @0b0000100
+@         @and r2, r6   @ 0100 & 0101 -> 0100
+@         lsr r2, #2      @ Desloca o bit 2x para direita  -> 0001 
+@         cmp r2, #1
+@         bleq GPIOTurnLCDPinOn
+@         blne GPIOTurnLCDPinOff
+@         @ D7
 
-        ldr r1, D7
-        mov r2, #8      @0b00001000
-        and r2, value   @ 1000 & 1000 -> 1000
-        lsr r2, #3      @ Desloca o bit 3x para direita  -> 0001 
-        cmp r2, #1      
-        bleq GPIOTurnLCDPinOn
-        blne GPIOTurnLCDPinOff
+@         ldr r1, D7
+@         mov r2, #8      @0b00001000
+@         @and r2, r6   @ 1000 & 1000 -> 1000
+@         lsr r2, #3      @ Desloca o bit 3x para direita  -> 0001 
+@         cmp r2, #1      
+@         bleq GPIOTurnLCDPinOn
+@         blne GPIOTurnLCDPinOff
 
-        @ RS
-        GPIOTurnOn RS
-        enable
+@         @ RS
+@         GPIOTurnOn RS
+@         enable
 
-        GPIOTurnLCDPinOn:
-                GPIOTurnOn r1
-                BX LR
+@ .endm
 
-        GPIOTurnLCDPinOff:
-                GPIOTurnOff r1
-                BX LR
-        
-.endm
-
-.macro WriteNumber value
+.macro WriteOnDisplay value
         @ r1 - Pino
         @ r2 - Bit que determina se deve ligar ou desligar o pino.
         @ value - 4 bits menos significativos do Código do char.
@@ -207,53 +199,36 @@
         @ D7 D6 D5 D4
 
         @ D4 
-        ldr r1, D4
-        mov r2, #1      @0b0001   
-        and r2, value   @0001 & 0011 -> 0001 
-        cmp r2, #1  
-        bleq GPIOTurnLCDPinOn
-        blne GPIOTurnLCDPinOff
+        
+        mov r9, #0b0001      @0b0001   
+        and r9, r6   @0001 & 0011 -> 0001 
+        GPIOTurn D4, r9
 
         @ D5
-        ldr r1, D5
-        mov r2, #2      @0b0010
-        and r2, value   @ 0010 & 0011 -> 0010
-        lsr r2, #1      @ Desloca o bit 1x para direita  -> 0001            
-        cmp r2, #1    
-        bleq GPIOTurnLCDPinOn
-        blne GPIOTurnLCDPinOff
+        mov r9, #0b0010    @0b0010
+        and r9, r6     @ 0010 & 0011 -> 0010
+        lsr r9, #1      @ Desloca o bit 1x para direita  -> 0001             
+        GPIOTurn D5, r9
+        
         @ D6
-
-        ldr r1, D6
-        mov r2, #4      @0b0100
-        and r2, value   @ 0100 & 0101 -> 0100
-        lsr r2, #2      @ Desloca o bit 2x para direita  -> 0001 
-        cmp r2, #1
-        bleq GPIOTurnLCDPinOn
-        blne GPIOTurnLCDPinOff
+        mov r9, #0b0100      @0b0100
+        and r9, r6  @ 0100 & 0101 -> 0100
+        lsr r9, #2      @ Desloca o bit 2x para direita  -> 0001 
+        GPIOTurn D6, r9
+        
         @ D7
-
-        ldr r1, D7
-        mov r2, #8      @0b1000
-        and r2, value   @ 1000 & 1000 -> 1000
-        lsr r2, #3      @ Desloca o bit 3x para direita  -> 0001 
-        cmp r2, #1      
-        bleq GPIOTurnLCDPinOn
-        blne GPIOTurnLCDPinOff
+        mov r9, #0b1000      @0b1000
+        and r9, r6   @ 1000 & 1000 -> 1000
+        lsr r9, #3      @ Desloca o bit 3x para direita  -> 0001      
+        GPIOTurn D7, r9
 
         @ RS
         GPIOTurnOn RS
         enable
 
-        GPIOTurnLCDPinOn:
-                GPIOTurnOn r1
-                BX LR
-
-        GPIOTurnLCDPinOff:
-                GPIOTurnOff r1
-                BX LR
         
 .endm
+
 
 @ Clears display and returns cursor to the home position 
 .macro clearLCD

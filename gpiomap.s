@@ -79,6 +79,21 @@
         str r1, [r8, r2] @ save it to reg to do work
 .endm
 
+.macro GPIOTurn pin value
+        mov r2, r8
+        mov r0, \value
+        cmp r0, #0
+        addeq r2, #clrregoffset
+        addne r2, #setregoffset
+        mov r0, #1 @ 1 bit to shift into pos
+        ldr r3, =\pin @ base of pin info table
+        add r3, #8 @ add offset for shift amt
+        ldr r3, [r3] @ load shift from table
+        lsl r0, r3 @ do the shift
+        str r0, [r2] @ write to the register
+.endm
+
+
 .macro GPIOTurnOn pin
          mov r2, r8 @ address of gpio regs
          add r2, #setregoffset @ off to set reg
