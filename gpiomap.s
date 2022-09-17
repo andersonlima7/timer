@@ -79,9 +79,6 @@
         str r1, [r8, r2] @ save it to reg to do work
 .endm
 
-
-
-
 .macro GPIOTurnOn pin
          mov r2, r8 @ address of gpio regs
          add r2, #setregoffset @ off to set reg
@@ -144,14 +141,6 @@
     mov r7, #4 @ linux write system call
     svc 0 @ Call linux to print
 .endm
-
-
-@ _desligado:
-@         mov r0, #0 @ O pino nao esta ativo, mov 0 para r0
-
-@ _ligado:
-@         mov r0, #1 @ O pino esta ativo, mov 1 para r0
-
 
 
 

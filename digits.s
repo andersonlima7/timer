@@ -91,14 +91,8 @@
 .endm
 
 .macro Write7
-    @digits
+    digits
     @ 0 1 1 1
-    GPIOTurnOn D4 @DB4 = 1
-    GPIOTurnOn D5 @ DB5 = 1
-    GPIOTurnOff D6 @DB6 = 0
-    GPIOTurnOff D7 @DB7 = 0
-    GPIOTurnOn RS @RS = 1
-    enable
     GPIOTurnOn D4 @DB4 = 1
     GPIOTurnOn D5 @ DB5 = 1
     GPIOTurnOn D6 @DB6 = 1

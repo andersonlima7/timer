@@ -16,7 +16,7 @@ _start:
         GPIODirectionIn pin26
 
         @ variavel do loop
-        mov r6, #10
+        mov r6, #9
         loop:
             nanoSleep time1s
             clearLCD
@@ -30,10 +30,10 @@ _start:
             bne loopdone
 
 resetCounter:
-       mov r6, #10
+       mov r6, #9
        b loop
 
-@ Reinicia o contado
+@ Reinicia o contador
 
 .macro reset
        GPIOReadRegister pin26
@@ -50,7 +50,7 @@ resetCounter:
 @ Contador
 count:
         nanoSleep time1s
-        Write7
+        WriteNumber [r6]
         reset
         stop
         sub r6, #1
