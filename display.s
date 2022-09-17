@@ -150,8 +150,6 @@
         ModeSet
         DisplayOnOff
 .endm
-
-
 .data
 
 time5ms:
@@ -163,6 +161,9 @@ time1ms:
 time100us:
         .word 0
         .word 000250000
+time1s:
+        .word 1
+        .word 000000000
 
 
 @ E - Enable, a high to low pulse need to enable the LCD

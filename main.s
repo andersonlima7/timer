@@ -1,12 +1,14 @@
 @ Programa para receber uma entrada de um botão (pino 5) e ligar um led (pino 12)
 
 .include "gpiomap.s"
+.include "display.s"
+.include "digits.s"
 
 .global _start
 
 
 _start:
-        mapMem @ mapemaento 
+        mapMem @ mapemaento
 
         @ Definicao dos pinos como entradas
         GPIODirectionIn pin5
@@ -16,6 +18,8 @@ _start:
         @ variavel do loop
         mov r6, #10
         loop:
+            nanoSleep time1s
+            clearLCD
             GPIOReadRegister pin5
             cmp r0, r3
             bne count
@@ -25,42 +29,42 @@ _start:
             cmp r0, r3
             bne loopdone
 
+resetCounter:
+       mov r6, #10
+       b loop
+
+@ Reinicia o contado
+
+.macro reset
+       GPIOReadRegister pin26
+       cmp r0, r3
+       bne resetCounter
+.endm
+
+.macro stop
+        GPIOReadRegister pin5
+        cmp r0, r3
+        bne loop
+.endm
 
 @ Contador
 count:
-        print
+        nanoSleep time1s
+        Write7
         reset
         stop
         sub r6, #1
         cmp r6, #0
         bge count
-        b loop
+        b loopdone
 
 @ Pausa o contador
-stop:
-        GPIOReadRegister pin5
-        cmp r0, r3  
-        bne loop
-
-
-resetCounter:
-       mov r6, #10
-       b loop
-
-
-@ Reinicia o contador
-reset:
-       GPIOReadRegister pin26
-       cmp r0, r3  
-       bne resetCounter
-
-
 
 
 loopdone:
-        nanoSleep
+        nanoSleep time1s
         GPIOTurnOff pin6
-        nanoSleep
+        nanoSleep time1s
         GPIOTurnOn pin6
         b _end
 

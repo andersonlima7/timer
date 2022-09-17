@@ -18,8 +18,9 @@ _start:
         GPIODirectionOut RS
 
         @ Inicia o display
-        Initialization
+        @Initialization
 
+        clearLCD
         Write7
         b _end
 
