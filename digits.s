@@ -1,5 +1,4 @@
-@ Macros para mandar para o display os dígitos de 0 a 9
-
+@ Vários macros
 
 @ Acessa a coluna dos digitos no display
 .macro digits 
@@ -11,6 +10,28 @@
     GPIOTurnOn RS @RS = 1
     enable
 .endm
+
+@ Divisão de inteiros
+@ N - Numerador
+@ D - Denominador
+.macro division N D
+    @ r0 - resultado
+    @ r1 - resto
+    @ r2 - denominador
+    mov r0, #0 
+    mov r1, \N
+    mov r2, \D 
+    bl loop
+.endm
+
+loop:
+        cmp r1, r2
+        bxlo lr @ Condição de parada -> r1 = resto < r2 = denominador
+        sub r1, r2
+        add r0, #1
+        b loop
+        
+
 
 .macro Write0
     digits

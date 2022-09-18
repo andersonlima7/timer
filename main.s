@@ -7,6 +7,24 @@
 .global _start
 
 
+.macro Write2Digits
+        division r6, r7
+        WriteOnDisplay r0 @ Dezena
+        WriteOnDisplay r1 @ Unidade
+.endm
+
+
+@ Escreve números de 3 dígitos no display, quanto mais dígitos, mais divisões temos que fazer.
+
+.macro Write3Digits
+        division r6, r7 @ 123/10 -> r0=12 e r1=3
+        mov r5, r1 @ Salva o valor da unidade
+        mov r4, r0 @ Salva o r0, r4=12
+        division r4, r7 @ 12/10 -> r0=1 e r1=2
+        WriteOnDisplay r0 @ Centena
+        WriteOnDisplay r1 @ Dezena
+        WriteOnDisplay r5 @ Unidade
+.endm
 
 
 _start:
@@ -19,8 +37,9 @@ _start:
 
         @ variavel do loop
         clearLCD
-        mov r6, #9
-        WriteOnDisplay r6
+        mov r6, #99
+        mov r7, #10
+        Write2Digits
         loop:
             nanoSleep time1s
             GPIOReadRegister pin5
@@ -28,9 +47,7 @@ _start:
             bne count
 
             @ Reinicia o programa
-            GPIOReadRegister pin26
-            cmp r0, r3
-            bne _start
+            reset
 
             @ Termina o programa
             GPIOReadRegister pin19
@@ -56,14 +73,13 @@ _start:
 count:
         nanoSleep time1s
         clearLCD
-        WriteOnDisplay r6
+        Write2Digits
         reset
         stop
         sub r6, #1
         cmp r6, #0
-        bge count
+        bhi count
         b loop
-
 @ Pausa o contador
 
 
