@@ -9,8 +9,8 @@
 
 .macro Write2Digits
         division r6, r7
-        WriteOnDisplay r0 @ Dezena
-        WriteOnDisplay r1 @ Unidade
+        WriteNumber r10 @ Dezena
+        WriteNumber r11 @ Unidade
 .endm
 
 
@@ -21,9 +21,9 @@
         mov r5, r1 @ Salva o valor da unidade
         mov r4, r0 @ Salva o r0, r4=12
         division r4, r7 @ 12/10 -> r0=1 e r1=2
-        WriteOnDisplay r0 @ Centena
-        WriteOnDisplay r1 @ Dezena
-        WriteOnDisplay r5 @ Unidade
+        @ WriteNumber r0 @ Centena
+        @ WriteNumber r1 @ Dezena
+        @ WriteNumber r5 @ Unidade
 .endm
 
 
@@ -35,9 +35,19 @@ _start:
         GPIODirectionIn pin19
         GPIODirectionIn pin26
 
+        @ Definicao dos pinos como saidas
+        GPIODirectionOut D4
+        GPIODirectionOut D5
+        GPIODirectionOut D6
+        GPIODirectionOut D7
+        GPIODirectionOut RS
+
+        
+        Initialization
+
         @ variavel do loop
         clearLCD
-        mov r6, #99
+        mov r6, #91
         mov r7, #10
         Write2Digits
         loop:
@@ -47,7 +57,9 @@ _start:
             bne count
 
             @ Reinicia o programa
-            reset
+            GPIOReadRegister pin26
+            cmp r0, r3
+            bne _start
 
             @ Termina o programa
             GPIOReadRegister pin19
@@ -73,12 +85,21 @@ _start:
 count:
         nanoSleep time1s
         clearLCD
-        Write2Digits
-        reset
-        stop
+        @ r0 - resultado
+        @ r1 - resto
+        @ r2 - denominador
+        mov r10, #0 
+        mov r11, r6
+        mov r12, #10
+        bl loopDivision
+        WriteNumber r10 @ Dezena
+        WriteNumber r11 @ Unidade
+        @reset
+        @stop
         sub r6, #1
         cmp r6, #0
         bhi count
+        reset
         b loop
 @ Pausa o contador
 

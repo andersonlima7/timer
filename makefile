@@ -6,6 +6,6 @@ DEBUGFLGS =
 endif
 
 %.o:%.s
-	as $(DEBUGFLGS) $ < -o $@
+	as $(DEBUGFLGS) $< -o $@
 main: $(OBJS)
 	ld -o main $(OBJS)

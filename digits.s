@@ -18,128 +18,18 @@
     @ r0 - resultado
     @ r1 - resto
     @ r2 - denominador
-    mov r0, #0 
-    mov r1, \N
-    mov r2, \D 
-    bl loop
+    mov r10, #0 
+    mov r11, \N
+    mov r12, \D 
+    bl loopDivision
 .endm
 
-loop:
-        cmp r1, r2
+loopDivision:
+        cmp r11, r12
         bxlo lr @ Condição de parada -> r1 = resto < r2 = denominador
-        sub r1, r2
-        add r0, #1
-        b loop
+        sub r11, r12
+        add r10, #1
+        b loopDivision
         
 
 
-.macro Write0
-    digits
-    @ 0 0 0 0
-    GPIOTurnOff D4 @DB4 = 0
-    GPIOTurnOff D5 @ DB5 = 0
-    GPIOTurnOff D6 @DB6 = 0
-    GPIOTurnOff D7 @DB7 = 0
-    GPIOTurnOn RS @RS = 1
-    enable
-.endm
-
-
-.macro Write1
-    digits
-    @ 0 0 0 1
-    GPIOTurnOn D4 @DB4 = 1
-    GPIOTurnOff D5 @ DB5 = 0
-    GPIOTurnOff D6 @DB6 = 0
-    GPIOTurnOff D7 @DB7 = 0
-    GPIOTurnOn RS @RS = 1
-    enable
-.endm
-
-.macro Write2
-    digits
-    @ 0 0 1 0
-    GPIOTurnOff D4 @DB4 = 0
-    GPIOTurnOn D5 @ DB5 = 1
-    GPIOTurnOff D6 @DB6 = 0
-    GPIOTurnOff D7 @DB7 = 0
-    GPIOTurnOn RS @RS = 1
-    enable
-.endm
-
-.macro Write3
-    digits
-    @ 0 0 1 1
-    GPIOTurnOn D4 @DB4 = 1
-    GPIOTurnOn D5 @ DB5 = 1
-    GPIOTurnOff D6 @DB6 = 0
-    GPIOTurnOff D7 @DB7 = 0
-    GPIOTurnOn RS @RS = 1
-    enable
-.endm
-
-.macro Write4
-    digits
-    @ 0 1 0 0
-    GPIOTurnOff D4 @DB4 = 0
-    GPIOTurnOff D5 @ DB5 = 0
-    GPIOTurnOn D6 @DB6 = 1
-    GPIOTurnOff D7 @DB7 = 0
-    GPIOTurnOn RS @RS = 1
-    enable
-.endm
-
-.macro Write5
-    digits
-    @ 0 1 0 1
-    GPIOTurnOn D4 @DB4 = 1
-    GPIOTurnOff D5 @ DB5 = 0
-    GPIOTurnOn D6 @DB6 = 1
-    GPIOTurnOff D7 @DB7 = 0
-    GPIOTurnOn RS @RS = 1
-    enable
-.endm
-
-.macro Write6
-    digits
-    @ 0 1 1 0
-    GPIOTurnOff D4 @DB4 = 0
-    GPIOTurnOn D5 @ DB5 = 1
-    GPIOTurnOn D6 @DB6 = 1
-    GPIOTurnOff D7 @DB7 = 0
-    GPIOTurnOn RS @RS = 1
-    enable
-.endm
-
-.macro Write7
-    digits
-    @ 0 1 1 1
-    GPIOTurnOn D4 @DB4 = 1
-    GPIOTurnOn D5 @ DB5 = 1
-    GPIOTurnOn D6 @DB6 = 1
-    GPIOTurnOff D7 @DB7 = 0
-    GPIOTurnOn RS @RS = 1
-    enable
-.endm
-
-.macro Write8
-    digits
-    @ 1 0 0 0
-    GPIOTurnOff D4 @DB4 = 0
-    GPIOTurnOff D5 @ DB5 = 0
-    GPIOTurnOff D6 @DB6 = 1
-    GPIOTurnOn D7 @DB7 = 1
-    GPIOTurnOn RS @RS = 1
-    enable
-.endm
-
-.macro Write9
-    digits
-    @ 1 0 0 1
-    GPIOTurnOn D4 @DB4 = 1
-    GPIOTurnOff D5 @ DB5 = 0
-    GPIOTurnOff D6 @DB6 = 0
-    GPIOTurnOn D7 @DB7 = 1
-    GPIOTurnOn RS @RS = 1
-    enable
-.endm

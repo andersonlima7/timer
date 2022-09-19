@@ -62,6 +62,7 @@
         @ para definir o pino6 como saida, por exemplo.
         orr r1, r0 @ set the bit -> Define o bit no r1 001 000 000 001 000 000 000 000 001 000 (pino6 agora ativo)
         str r1, [r8, r2] @ save it to reg to do work -> Salva no registrador para executar o comando
+        .ltorg
 .endm
 
 @ Author: A.L
@@ -77,6 +78,7 @@
         lsl r0, r3 @ shift into position
         bic r1, r0 @ clear the three bits
         str r1, [r8, r2] @ save it to reg to do work
+        .ltorg
 .endm
 
 .macro GPIOTurn pin value
