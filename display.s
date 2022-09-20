@@ -122,7 +122,7 @@
         .ltorg
 .endm
 
-@ Controla os pinos D4, D5, D6, D7 e RS do display.
+@ Controla os pinos D4, D5, D6, D7 e RS do display em dois pulsos de 5bits.
 .macro WriteData10bit value
         @ r1 - Pino
         @ r2 - Bit que determina se deve ligar ou desligar o pino 
@@ -199,7 +199,7 @@
 .macro WriteNumber value
         @ r1 - Pino
         @ r2 - Bit que determina se deve ligar ou desligar o pino.
-        @ value - 4 bits menos significativos do Código do char.
+        @ value - 4 bits menos significativos do Código do número.
 
         
         @ Seleciona as colunas de dígito do display
@@ -285,6 +285,9 @@ time1ms: .word 0
          .word 1000000
 time100us:.word 0 
           .word 150000
+time450ns:
+        .word 0
+        .word 450
 time1s: .word 1
         .word 000000000
 

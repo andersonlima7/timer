@@ -8,7 +8,8 @@
 
 
 .macro Write2Digits
-        division r6, r7
+        mov r7, #10
+        division r6, r7 
         WriteNumber r10 @ Dezena
         WriteNumber r11 @ Unidade
 .endm
@@ -16,14 +17,22 @@
 
 @ Escreve números de 3 dígitos no display, quanto mais dígitos, mais divisões temos que fazer.
 
+.macro WriteDigits
+        mov r10, r6
+        bl divisions
+        WriteNumber r10
+.endm
+
 .macro Write3Digits
+        mov r7, #10
         division r6, r7 @ 123/10 -> r0=12 e r1=3
-        mov r5, r1 @ Salva o valor da unidade
-        mov r4, r0 @ Salva o r0, r4=12
+        mov r5, r11 @ Salva o valor da unidade
+        mov r4, r10 @ Salva o r10, r4=12
+        mov r7, #10
         division r4, r7 @ 12/10 -> r0=1 e r1=2
-        @ WriteNumber r0 @ Centena
-        @ WriteNumber r1 @ Dezena
-        @ WriteNumber r5 @ Unidade
+        WriteNumber r10 @ Centena
+        WriteNumber r11 @ Dezena
+        WriteNumber r5 @ Unidade
 .endm
 
 
@@ -41,15 +50,16 @@ _start:
         GPIODirectionOut D6
         GPIODirectionOut D7
         GPIODirectionOut RS
+        GPIODirectionOut E
 
         
         Initialization
 
         @ variavel do loop
         clearLCD
-        mov r6, #91
+        mov r6, #123
         mov r7, #10
-        Write2Digits
+        WriteDigits
         loop:
             nanoSleep time1s
             GPIOReadRegister pin5
@@ -75,6 +85,7 @@ _start:
        bne _start
 .endm
 
+@ Pausa o contador
 .macro stop
         GPIOReadRegister pin5
         cmp r0, r3
@@ -85,30 +96,34 @@ _start:
 count:
         nanoSleep time1s
         clearLCD
-        @ r0 - resultado
-        @ r1 - resto
-        @ r2 - denominador
-        mov r10, #0 
-        mov r11, r6
-        mov r12, #10
-        bl loopDivision
-        WriteNumber r10 @ Dezena
-        WriteNumber r11 @ Unidade
+        sub r6, #1
+        WriteDigits
         @reset
         @stop
-        sub r6, #1
         cmp r6, #0
         bhi count
         reset
         b loop
-@ Pausa o contador
+
+divisions:
+        mov r7, #10
+        division r6, r7         @ 123/10 -> r10=12 e r11=3  | 12/10 -> r10=1 e r11=2
+        WriteNumber r11         @ escreve o 3 | escreve o 2 
+        @ Código do shift para direita
+        cmp r10, #10
+        bxlo lr         @r10 < 10, acabou
+        b divisions
 
 
 loopdone:
         nanoSleep time1s
-        GPIOTurnOff pin6
+        WriteData10bit #1010010001  @F
+        WriteData10bit #1010011001  @I
+        WriteData10bit #1010011101  @M
+        WriteData10bit #1000110000  @
+        WriteData10bit #1001111010  @:
+        WriteData10bit #1001011001  @ )
         nanoSleep time1s
-        GPIOTurnOn pin6
         b _end
 
 
