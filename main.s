@@ -51,7 +51,6 @@ _start:
         GPIODirectionOut D7
         GPIODirectionOut RS
         GPIODirectionOut E
-
         
         Initialization
 
@@ -59,7 +58,10 @@ _start:
         clearLCD
         mov r6, #123
         mov r7, #10
-        WriteDigits
+        @ WriteDigits
+        mov r5, #0b10010110
+        @WriteChar r5        
+        WriteNumber #6
         loop:
             nanoSleep time1s
             GPIOReadRegister pin5
@@ -74,7 +76,7 @@ _start:
             @ Termina o programa
             GPIOReadRegister pin19
             cmp r0, r3
-            bne loopdone
+            bne endmessage
             b loop
 
 
@@ -107,22 +109,28 @@ count:
 
 divisions:
         mov r7, #10
-        division r6, r7         @ 123/10 -> r10=12 e r11=3  | 12/10 -> r10=1 e r11=2
+        division r10, r7         @ 123/10 -> r10=12 e r11=3  | 12/10 -> r10=1 e r11=2
         WriteNumber r11         @ escreve o 3 | escreve o 2 
-        @ Código do shift para direita
+        shiftDisplay
         cmp r10, #10
         bxlo lr         @r10 < 10, acabou
         b divisions
 
 
-loopdone:
+endmessage:
         nanoSleep time1s
-        WriteData10bit #1010010001  @F
-        WriteData10bit #1010011001  @I
-        WriteData10bit #1010011101  @M
-        WriteData10bit #1000110000  @
-        WriteData10bit #1001111010  @:
-        WriteData10bit #1001011001  @ )
+        mov r9, #0b1010010001  @F
+        WriteData10bit r9 
+        mov r9, #0b1010011001  @I
+        WriteData10bit r9
+        mov r9, #0b1010011101  @M
+        WriteData10bit r9
+        mov r9, #0b1000110000  @
+        WriteData10bit r9
+        mov r9, #0b1001111010  @:
+        WriteData10bit r9
+        mov r9, #0b1001011001  @ )
+        WriteData10bit r9
         nanoSleep time1s
         b _end
 
