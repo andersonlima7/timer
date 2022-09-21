@@ -87,7 +87,7 @@
         GPIOTurnOff D4 @S = 0 -> Not shift 
         GPIOTurnOn D5  @I/D = 1 -> Right 
         GPIOTurnOn D6  @DB6 = 1
-        GPIOTurnOff D7 @DB7 = 0
+        GPIOTurnOn D7 @DB7 = 0
         GPIOTurnOff RS @RS = 0
         enable
 .endm
@@ -334,13 +334,50 @@
 .endm
 
 @ Shifts display's characters to the left
-.macro shiftDisplay
-        GPIOTurnOn D4
+.macro cursorDisplayShift SC RL
+        GPIOTurnOn D4 
         GPIOTurnOff D5
         GPIOTurnOff D6
         GPIOTurnOff D7
         GPIOTurnOff RS 
         enable
+        GPIOTurnOff D4 @ Não importa
+        GPIOTurnOff D5 @ Não importa
+        GPIOTurn D6, \RL @D6 - R/L Direita ou Esquerda
+        GPIOTurn D7, \SC @D7 - Display ou Cursos
+        GPIOTurnOff RS 
+        enable
+.endm
+
+.macro shiftRightDisplay
+        GPIOTurnOn D4 
+        GPIOTurnOff D5
+        GPIOTurnOff D6
+        GPIOTurnOff D7
+        GPIOTurnOff RS 
+        enable
+        GPIOTurnOff D4 @ Não importa
+        GPIOTurnOff D5 @ Não importa
+        GPIOTurnOn D6@D6 - R/L Direita ou Esquerda
+        GPIOTurnOn D7 @D7 - Display ou Cursos
+        GPIOTurnOff RS 
+        enable
+.endm
+
+.macro CursorHome
+        GPIOTurnOff D4 
+        GPIOTurnOff D5
+        GPIOTurnOff D6
+        GPIOTurnOff D7
+        GPIOTurnOff RS 
+        enable
+        GPIOTurnOff D4 @ Não importa
+        GPIOTurnOn D5 @
+        GPIOTurnOff D6@D6 - R/L Direita ou Esquerda
+        GPIOTurnOff D7 @D7 - Display ou Cursos
+        GPIOTurnOff RS 
+        enable
+
 .endm
 
 .macro activeSecondLine
@@ -384,15 +421,25 @@
         nanoSleep time100us
         WriteData5bit #0b00011 @Function set
 
-        WriteData5bit  #0b00010
-        mov r9, #0b0001000100 @00010 001XX
+        WriteData5bit #0b00010
+
+
+        WriteData5bit #0b00010
+        WriteData5bit #0b00000
+        mov r9, #0b0000001000 @00010 001XX
         WriteData10bit r9 
-        mov r9, #0b0000001000 @00000 001000 
+        mov r9, #0b0000000001 @00010 001XX
+        WriteData10bit r9 
+        mov r9, #0b0000000110 @00010 001XX
+        WriteData10bit r9 
+        mov r9, #0b0000001110 @00000 001000 
         WriteData10bit r9
-        DisplayOff 
-        clearLCD
-        ModeSet 
-        DisplayOnOff
+        mov r9, #0b0000000110 @00010 001XX
+        WriteData10bit r9 
+        @DisplayOff 
+        @clearLCD
+        @ModeSet 
+        @DisplayOnOff
 .endm
 .data
 

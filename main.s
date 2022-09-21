@@ -18,7 +18,7 @@
 @ Escreve números de 3 dígitos no display, quanto mais dígitos, mais divisões temos que fazer.
 
 .macro WriteDigits
-        mov r10, r6
+        mov r5, r6
         bl divisions
         WriteNumber r10
 .endm
@@ -59,9 +59,9 @@ _start:
         mov r6, #123
         mov r7, #10
         @ WriteDigits
-        mov r5, #0b10010110
+        @mov r5, #0b10010110
         @WriteChar r5        
-        WriteNumber #6
+        WriteDigits
         loop:
             nanoSleep time1s
             GPIOReadRegister pin5
@@ -100,20 +100,30 @@ count:
         clearLCD
         sub r6, #1
         WriteDigits
-        @reset
-        @stop
         cmp r6, #0
         bhi count
-        reset
         b loop
 
 divisions:
+        push {lr}
+        GPIODirectionOut D4
+        GPIODirectionOut D5
+        GPIODirectionOut D6
+        GPIODirectionOut D7
+        GPIODirectionOut RS
+        GPIODirectionOut E
         mov r7, #10
-        division r10, r7         @ 123/10 -> r10=12 e r11=3  | 12/10 -> r10=1 e r11=2
+        division r5, r7         @ 123/10 -> r10=12 e r11=3  | 12/10 -> r10=1 e r11=2
         WriteNumber r11         @ escreve o 3 | escreve o 2 
-        shiftDisplay
-        cmp r10, #10
-        bxlo lr         @r10 < 10, acabou
+        cursorDisplayShift #0, #0
+        cursorDisplayShift #1, #1
+        cursorDisplayShift #0, #0
+        @cursorDisplayShift #1, #1 @ Display shift to right
+        @cursorDisplayShift #0, #0
+        mov r5, r10
+        cmp r5, #10
+        pop {lr}
+        bxlo lr         @r5 < 10, acabou
         b divisions
 
 
