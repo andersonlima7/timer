@@ -1,3 +1,8 @@
+@ Temporizador em um Display LCD
+@ Autores: Antony Araujo e Anderson Lima
+@ Disciplina: MI - Sistemas Digitais
+@ Data: 23/09/2022
+
 @ Vários macros
 
 @ Acessa a coluna dos digitos no display
@@ -24,6 +29,7 @@
     bl loopDivision
 .endm
 
+@ Realiza a divisão como o dividendo atual
 loopDivision:
         cmp r11, r12
         bxlo lr @ Condição de parada -> r1 = resto < r2 = denominador

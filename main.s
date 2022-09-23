@@ -1,5 +1,5 @@
 @ Temporizador em um Display LCD
-@ Autores: Antony 
+@ Autores: Antony Araujo e Anderson Lima
 @ Disciplina: MI - Sistemas Digitais
 @ Data: 23/09/2022
 
