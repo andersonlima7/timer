@@ -9,16 +9,30 @@
 
 .macro Write2Digits
         mov r7, #10
-        division r6, r7 
+        division r6, r7
         WriteNumber r10 @ Dezena
         WriteNumber r11 @ Unidade
+.endm
+
+.macro SetInputs
+        GPIODirectionIn pin5
+        GPIODirectionIn pin19
+        GPIODirectionIn pin26
+.endm
+.macro SetOutputs
+        GPIODirectionOut D4
+        GPIODirectionOut D5
+        GPIODirectionOut D6
+        GPIODirectionOut D7
+        GPIODirectionOut RS
+        GPIODirectionOut E
 .endm
 
 
 @ Escreve números de 3 dígitos no display, quanto mais dígitos, mais divisões temos que fazer.
 
 .macro WriteDigits
-        mov r10, r6
+        mov r5, r6
         bl divisions
         WriteNumber r10
 .endm
@@ -40,45 +54,59 @@ _start:
         mapMem @ mapemaento
 
         @ Definicao dos pinos como entradas
-        GPIODirectionIn pin5
-        GPIODirectionIn pin19
-        GPIODirectionIn pin26
-
+        SetInputs
         @ Definicao dos pinos como saidas
-        GPIODirectionOut D4
-        GPIODirectionOut D5
-        GPIODirectionOut D6
-        GPIODirectionOut D7
-        GPIODirectionOut RS
-        GPIODirectionOut E
-        
+        SetOutputs
+
         Initialization
 
         @ variavel do loop
         clearLCD
-        mov r6, #123
+
+        ldr r6, =tempo16digitos
         mov r7, #10
-        @ WriteDigits
-        mov r5, #0b10010110
-        @WriteChar r5        
-        WriteNumber #6
-        loop:
-            nanoSleep time1s
-            GPIOReadRegister pin5
-            cmp r0, r3
-            bne count
+        WriteDigits    
 
-            @ Reinicia o programa
-            GPIOReadRegister pin26
-            cmp r0, r3
-            bne _start
+loop:
+    @Inicia a contagem
+    nanoSleep time1s
+    GPIOReadRegister pin19
+    cmp r0, r3
+    bne count
 
-            @ Termina o programa
-            GPIOReadRegister pin19
-            cmp r0, r3
-            bne endmessage
-            b loop
+    @ Reinicia o programa
+    GPIOReadRegister pin26
+    cmp r0, r3
+    bne _start
 
+    @ Termina o programa
+    GPIOReadRegister pin19
+    cmp r0, r3
+    bne endmessage
+    b loop    
+
+
+count:
+        SetInputs        
+
+        nanoSleep time1s
+        clearLCD
+        sub r6, #1        
+        
+        GPIOReadRegister pin26
+        cmp r0, r3
+        bne _start
+        
+        WriteDigits
+
+        @ Verifica o botão de pausar
+        GPIOReadRegister pin19
+        cmp r0, r3
+        bne loop
+        
+        cmp r6, #0
+        bhi count
+        b loop
 
 @ Reinicia o contador
 .macro reset
@@ -94,33 +122,29 @@ _start:
         bne loop
 .endm
 
-@ Contador
-count:
-        nanoSleep time1s
-        clearLCD
-        sub r6, #1
-        WriteDigits
-        @reset
-        @stop
-        cmp r6, #0
-        bhi count
-        reset
-        b loop
 
 divisions:
+        push {lr}
+        SetOutputs
         mov r7, #10
-        division r10, r7         @ 123/10 -> r10=12 e r11=3  | 12/10 -> r10=1 e r11=2
-        WriteNumber r11         @ escreve o 3 | escreve o 2 
-        shiftDisplay
-        cmp r10, #10
-        bxlo lr         @r10 < 10, acabou
+        division r5, r7         @ 123/10 -> r10=12 e r11=3  | 12/10 -> r10=1 e r11=2
+        WriteNumber r11         @ escreve o 3 | escreve o 2
+        cursorDisplayShift #0, #0
+        cursorDisplayShift #1, #1
+        cursorDisplayShift #0, #0
+        @cursorDisplayShift #1, #1 @ Display shift to right
+        @cursorDisplayShift #0, #0
+        mov r5, r10
+        cmp r5, #10
+        pop {lr}
+        bxlo lr         @r5 < 10, acabou
         b divisions
 
 
 endmessage:
         nanoSleep time1s
         mov r9, #0b1010010001  @F
-        WriteData10bit r9 
+        WriteData10bit r9
         mov r9, #0b1010011001  @I
         WriteData10bit r9
         mov r9, #0b1010011101  @M
