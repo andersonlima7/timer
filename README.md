@@ -4,18 +4,17 @@ Esse projeto tem por objetivo a construção de um temporizador de valores intei
 
 ## Sumário
 
-- [Temporizador em um Display LCD](#temporizador-em-um-display-lcd)
-  - [Sumário](#sumário)
-  - [Pré-requisitos](#pré-requisitos)
-  - [Passo a passo](#passo-a-passo)
-  - [Execução](#execução)
-    - [Espera](#espera)
-    - [Temporizador](#temporizador)
-    - [Pausa](#pausa)
-    - [Reset](#reset)
-    - [Finalizar](#finalizar)
-  - [Debugando com o GDB](#debugando-com-o-gdb)
-  - [Referências](#referências)
+
+- [Pré-requisitos](#pré-requisitos)
+- [Passo a passo](#passo-a-passo)
+- [Execução](#execução)
+  - [Espera](#espera)
+  - [Temporizador](#temporizador)
+  - [Pausa](#pausa)
+  - [Reset](#reset)
+  - [Finalizar](#finalizar)
+- [Debugando com o GDB](#debugando-com-o-gdb)
+- [Referências](#referências)
 
 ## Pré-requisitos
 
