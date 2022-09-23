@@ -52,4 +52,5 @@ Após esse comando o GDB irá inicializar, para fazer uso do mesmo há um conjun
 
 ## Referências
 [1] SMITH, Stephen. Raspberry Pi Assembly Language Programming. Apress, 2019.
+
 [2] GNU DEBUGGER (GDB). GDB: The GNU Project Debugger. 2022. Available on [https://www.sourceware.org/gdb/](https://www.sourceware.org/gdb/)
