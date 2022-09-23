@@ -12,9 +12,9 @@
 
 .macro enable
         GPIOTurnOff E
-        nanoSleep time5ms
+        nanoSleep time1ms
         GPIOTurnOn E
-        nanoSleep time5ms
+        nanoSleep time1ms
         GPIOTurnOff E
 .endm
 
@@ -22,7 +22,7 @@
 @ Sets interface data length (DL)
 .macro FunctionSet
         @ When 4-bit length is selected, data must be sent or received twice.
-        GPIOTurnOff D4 @ DL = 0 -> 4 bit length 
+        GPIOTurnOff D4 @ DL = 0 -> 4 bit length
         GPIOTurnOn D5 @ DB5 = 1
         GPIOTurnOff D6 @ DB6 = 0
         GPIOTurnOff D7 @ DB7 = 0
@@ -32,7 +32,7 @@
 
 
 @ Turns on display and cursor. Sets On/Off of all display (D), cursor On/Off (C) and blink of cursor position character (B)
-.macro DisplayOnOff 
+.macro DisplayOnOff
         @ 0 0 0 0 0
         GPIOTurnOff D4 @DB4 = 0
         GPIOTurnOff D5 @ DB5 = 0
@@ -48,8 +48,6 @@
         GPIOTurnOn D7  @DB7 = 1
         GPIOTurnOff RS @RS = 0
         enable
-
-       
 .endm
 
 @ Turns off display and cursor. Sets On/Off of all display (D), cursor On/Off (C) and blink of cursor position character (B)
@@ -75,7 +73,7 @@
 
 @ Sets cursor move direction and specifies display shift. Sets cursor move direction (I/D), specifies to shift the display (S).
 .macro ModeSet
-        @ 0 0 0 0 0 
+        @ 0 0 0 0 0
         GPIOTurnOff D4 @DB4 = 0
         GPIOTurnOff D5 @ DB5 = 0
         GPIOTurnOff D6 @DB6 = 0
@@ -84,8 +82,8 @@
         enable
 
         @ 0 0 1 1 0
-        GPIOTurnOff D4 @S = 0 -> Not shift 
-        GPIOTurnOn D5  @I/D = 1 -> Right 
+        GPIOTurnOff D4 @S = 0 -> Not shift
+        GPIOTurnOn D5  @I/D = 1 -> Right
         GPIOTurnOn D6  @DB6 = 1
         GPIOTurnOn D7 @DB7 = 0
         GPIOTurnOff RS @RS = 0
@@ -93,33 +91,33 @@
 .endm
 
 @ Controla os pinos D4, D5, D6, D7 e RS do display
-.macro WriteData5bit value   
-        mov r9, #0b00001      @0b0001   
-        and r9, \value   @0001 & 0011 -> 0001 
+.macro WriteData5bit value
+        mov r9, #0b00001      @0b0001
+        and r9, \value   @0001 & 0011 -> 0001
         GPIOTurn D4, r9
 
         @ D5
         mov r9, #0b00010    @0b0010
         and r9, \value     @ 0010 & 0011 -> 0010
-        lsr r9, #1      @ Desloca o bit 1x para direita  -> 0001             
+        lsr r9, #1      @ Desloca o bit 1x para direita  -> 0001
         GPIOTurn D5, r9
-        
+
         @ D6
         mov r9, #0b00100      @0b0100
         and r9, \value  @ 0100 & 0101 -> 0100
-        lsr r9, #2      @ Desloca o bit 2x para direita  -> 0001 
+        lsr r9, #2      @ Desloca o bit 2x para direita  -> 0001
         GPIOTurn D6, r9
-        
+
         @ D7
         mov r9, #0b01000      @0b1000
         and r9, \value   @ 01000 & 01000 -> 01000
-        lsr r9, #3      @ Desloca o bit 3x para direita  -> 00001      
+        lsr r9, #3      @ Desloca o bit 3x para direita  -> 00001
         GPIOTurn D7, r9
 
         @ RS
         mov r9, #0b10000      @0b10000
         and r9, \value   @ 10000 & 10100 -> 10000
-        lsr r9, #4      @ Desloca o bit 4x para direita  -> 00001      
+        lsr r9, #4      @ Desloca o bit 4x para direita  -> 00001
         GPIOTurn RS, r9
         enable
 .endm
@@ -127,72 +125,72 @@
 @ Controla os pinos D4, D5, D6, D7 e RS do display em dois pulsos de 5bits.
 .macro WriteData10bit value
         @ r1 - Pino
-        @ r2 - Bit que determina se deve ligar ou desligar o pino 
+        @ r2 - Bit que determina se deve ligar ou desligar o pino
         @ value - Código de 10 bits do char.
 
-        @ RS D7 D6 D5 D4 
-        @ ENABLE 
+        @ RS D7 D6 D5 D4
+        @ ENABLE
         @ RS D7 D6 D5 D4
 
-        @ D4 
-        mov r9, #0b0000100000      
+        @ D4
+        mov r9, #0b0000100000
         and r9, \value   @0b00010000 & 01010000 -> 00010000
         lsr r9, #5      @ Desloca o bit 5x para direita  -> 00000001/00000000
         GPIOTurn D4, r9
 
         @ D5
-        mov r9, #0b0001000000      
+        mov r9, #0b0001000000
         and r9, \value    @0b0001000000 & 0001100010 -> 0001000000
-        lsr r9, #6      @ Desloca o bit 6x para direita  -> 0000000001/0000000000            
+        lsr r9, #6      @ Desloca o bit 6x para direita  -> 0000000001/0000000000
         GPIOTurn D5, r9
-        
-        @ D6    
-        mov r9, #0b0010000000   
+
+        @ D6
+        mov r9, #0b0010000000
         and r9, \value  @0b0010000000 & 0101000100 -> 0010000000
         lsr r9, #7     @Desloca o bit 7x para direita  -> 0000000001/0000000000
         GPIOTurn D6, r9
-        
+
         @ D7
-        mov r9, #0b0100000000     
+        mov r9, #0b0100000000
         and r9, \value   @0b0100000000 & 0110100010 -> 010000000
-        lsr r9, #8      @ Desloca o bit 8x para direita  -> 000000001/000000000   
+        lsr r9, #8      @ Desloca o bit 8x para direita  -> 000000001/000000000
         GPIOTurn D7, r9
 
          @ RS
-        mov r9, #0b1000000000    
+        mov r9, #0b1000000000
         and r9, \value   @ 1000000000 & 1010000000 -> 1000000000
-        lsr r9, #9      @ Desloca o bit 9x para direita  -> 0000000001      
+        lsr r9, #9      @ Desloca o bit 9x para direita  -> 0000000001
         GPIOTurn RS, r9
 
         @ D7 D6 D5 D4
         enable
 
-        mov r9, #0b0000000001         
-        and r9, \value   @0001 & 0011 -> 0001 
+        mov r9, #0b0000000001
+        and r9, \value   @0001 & 0011 -> 0001
         GPIOTurn D4, r9
 
         @ D5
-        mov r9, #0b0000000010    
+        mov r9, #0b0000000010
         and r9, \value     @ 0010 & 0011 -> 0010
-        lsr r9, #1      @ Desloca o bit 1x para direita  -> 0001             
+        lsr r9, #1      @ Desloca o bit 1x para direita  -> 0001
         GPIOTurn D5, r9
-        
+
         @ D6
         mov r9, #0b0000000100      @0b0100
         and r9, \value  @ 0100 & 0101 -> 0100
-        lsr r9, #2      @ Desloca o bit 2x para direita  -> 0001 
+        lsr r9, #2      @ Desloca o bit 2x para direita  -> 0001
         GPIOTurn D6, r9
-        
+
         @ D7
         mov r9, #0b0000001000      @0b1000
         and r9, \value   @ 01000 & 01000 -> 01000
-        lsr r9, #3      @ Desloca o bit 3x para direita  -> 00001      
+        lsr r9, #3      @ Desloca o bit 3x para direita  -> 00001
         GPIOTurn D7, r9
 
         @ RS
         mov r9, #0b0000010000      @0b10000
         and r9, \value   @ 10000 & 10100 -> 10000
-        lsr r9, #4      @ Desloca o bit 4x para direita  -> 00001      
+        lsr r9, #4      @ Desloca o bit 4x para direita  -> 00001
         GPIOTurn RS, r9
         enable
         .ltorg
@@ -200,35 +198,35 @@
 
 .macro WriteChar value
         @ r1 - Pino
-        @ r2 - Bit que determina se deve ligar ou desligar o pino 
+        @ r2 - Bit que determina se deve ligar ou desligar o pino
         @ value - Código de 10 bits do char.
 
-        @ RS D7 D6 D5 D4 
-        @ ENABLE 
+        @ RS D7 D6 D5 D4
+        @ ENABLE
         @ RS D7 D6 D5 D4
 
-        @ D4 
-        mov r9, #0b00010000      
+        @ D4
+        mov r9, #0b00010000
         and r9, \value   @0b00010000 & 01010000 -> 00010000
         lsr r9, #4      @ Desloca o bit 5x para direita  -> 00000001/00000000
         GPIOTurn D4, r9
-        
+
         @ D5
-        mov r9, #0b00100000      
+        mov r9, #0b00100000
         and r9, \value    @0b0001000000 & 0001100010 -> 0001000000
-        lsr r9, #5      @ Desloca o bit 6x para direita  -> 0000000001/0000000000            
+        lsr r9, #5      @ Desloca o bit 6x para direita  -> 0000000001/0000000000
         GPIOTurn D5, r9
-        
-        @ D6    
-        mov r9, #0b01000000   
+
+        @ D6
+        mov r9, #0b01000000
         and r9, \value  @0b0010000000 & 0101000100 -> 0010000000
         lsr r9, #6     @Desloca o bit 7x para direita  -> 0000000001/0000000000
         GPIOTurn D6, r9
-        
+
         @ D7
-        mov r9, #0b10000000     
+        mov r9, #0b10000000
         and r9, \value   @0b0100000000 & 0110100010 -> 010000000
-        lsr r9, #7      @ Desloca o bit 8x para direita  -> 000000001/000000000   
+        lsr r9, #7      @ Desloca o bit 8x para direita  -> 000000001/000000000
         GPIOTurn D7, r9
 
          @ RS
@@ -238,28 +236,28 @@
 
         enable
 
-        
+
         @ D4
-        mov r9, #0b0001         
-        and r9, \value   @0001 & 0011 -> 0001 
+        mov r9, #0b0001
+        and r9, \value   @0001 & 0011 -> 0001
         GPIOTurn D4, r9
 
         @ D5
-        mov r9, #0b0010    
+        mov r9, #0b0010
         and r9, \value     @ 0010 & 0011 -> 0010
-        lsr r9, #1      @ Desloca o bit 1x para direita  -> 0001             
+        lsr r9, #1      @ Desloca o bit 1x para direita  -> 0001
         GPIOTurn D5, r9
-        
+
         @ D6
         mov r9, #0b0100      @0b0100
         and r9, \value  @ 0100 & 0101 -> 0100
-        lsr r9, #2      @ Desloca o bit 2x para direita  -> 0001 
+        lsr r9, #2      @ Desloca o bit 2x para direita  -> 0001
         GPIOTurn D6, r9
-        
+
         @ D7
         mov r9, #0b1000      @0b1000
         and r9, \value   @ 01000 & 01000 -> 01000
-        lsr r9, #3      @ Desloca o bit 3x para direita  -> 00001      
+        lsr r9, #3      @ Desloca o bit 3x para direita  -> 00001
         GPIOTurn D7, r9
 
         @ RS
@@ -274,45 +272,45 @@
         @ r2 - Bit que determina se deve ligar ou desligar o pino.
         @ value - 4 bits menos significativos do Código do número.
 
-        
+
         @ Seleciona as colunas de dígito do display
         digits
 
         @ D7 D6 D5 D4
 
-        @ D4 
-        
-        mov r9, #0b0001      @0b0001   
-        and r9, \value   @0001 & 0011 -> 0001 
+        @ D4
+
+        mov r9, #0b0001      @0b0001
+        and r9, \value   @0001 & 0011 -> 0001
         GPIOTurn D4, r9
 
         @ D5
         mov r9, #0b0010    @0b0010
         and r9, \value     @ 0010 & 0011 -> 0010
-        lsr r9, #1      @ Desloca o bit 1x para direita  -> 0001             
+        lsr r9, #1      @ Desloca o bit 1x para direita  -> 0001
         GPIOTurn D5, r9
-        
+
         @ D6
         mov r9, #0b0100      @0b0100
         and r9, \value  @ 0100 & 0101 -> 0100
-        lsr r9, #2      @ Desloca o bit 2x para direita  -> 0001 
+        lsr r9, #2      @ Desloca o bit 2x para direita  -> 0001
         GPIOTurn D6, r9
-        
+
         @ D7
         mov r9, #0b1000      @0b1000
         and r9, \value   @ 1000 & 1000 -> 1000
-        lsr r9, #3      @ Desloca o bit 3x para direita  -> 0001      
+        lsr r9, #3      @ Desloca o bit 3x para direita  -> 0001
         GPIOTurn D7, r9
 
         @ RS
         GPIOTurnOn RS
         enable
         .ltorg
-   
+
 .endm
 
 
-@ Clears display and returns cursor to the home position 
+@ Clears display and returns cursor to the home position
 .macro clearLCD
         @ 0 0 0 0 0
         @WriteData5bit #0b00000
@@ -335,47 +333,47 @@
 
 @ Shifts display's characters to the left
 .macro cursorDisplayShift SC RL
-        GPIOTurnOn D4 
+        GPIOTurnOn D4
         GPIOTurnOff D5
         GPIOTurnOff D6
         GPIOTurnOff D7
-        GPIOTurnOff RS 
+        GPIOTurnOff RS
         enable
         GPIOTurnOff D4 @ Não importa
         GPIOTurnOff D5 @ Não importa
         GPIOTurn D6, \RL @D6 - R/L Direita ou Esquerda
         GPIOTurn D7, \SC @D7 - Display ou Cursos
-        GPIOTurnOff RS 
+        GPIOTurnOff RS
         enable
 .endm
 
 .macro shiftRightDisplay
-        GPIOTurnOn D4 
+        GPIOTurnOn D4
         GPIOTurnOff D5
         GPIOTurnOff D6
         GPIOTurnOff D7
-        GPIOTurnOff RS 
+        GPIOTurnOff RS
         enable
         GPIOTurnOff D4 @ Não importa
         GPIOTurnOff D5 @ Não importa
         GPIOTurnOn D6@D6 - R/L Direita ou Esquerda
         GPIOTurnOn D7 @D7 - Display ou Cursos
-        GPIOTurnOff RS 
+        GPIOTurnOff RS
         enable
 .endm
 
 .macro CursorHome
-        GPIOTurnOff D4 
+        GPIOTurnOff D4
         GPIOTurnOff D5
         GPIOTurnOff D6
         GPIOTurnOff D7
-        GPIOTurnOff RS 
+        GPIOTurnOff RS
         enable
         GPIOTurnOff D4 @ Não importa
         GPIOTurnOn D5 @
         GPIOTurnOff D6@D6 - R/L Direita ou Esquerda
         GPIOTurnOff D7 @D7 - Display ou Cursos
-        GPIOTurnOff RS 
+        GPIOTurnOff RS
         enable
 
 .endm
@@ -385,30 +383,43 @@
 .endm
 
 .macro showMessage
+        nanoSleep time1ms
         mov r9,  #0b1010010101 @ T
         WriteData10bit r9
+        nanoSleep time1ms
         mov r9,  #0b1010110110 @ e
         WriteData10bit r9
+        nanoSleep time1ms
         mov r9,  #0b1110110110 @ m
         WriteData10bit r9
+        nanoSleep time1ms
         mov r9,  #0b1000010111 @ p
         WriteData10bit r9
+        nanoSleep time1ms
         mov r9,  #0b1111110110 @ o
         WriteData10bit r9
+        nanoSleep time1ms
         mov r9,  #0b1001010111 @ r
         WriteData10bit r9
+        nanoSleep time1ms
         mov r9,  #0b1100110110 @ i
         WriteData10bit r9
+        nanoSleep time1ms
         mov r9,  #0b1101010111 @ z
         WriteData10bit r9
+        nanoSleep time1ms
         mov r9,  #0b1000110110 @ a
         WriteData10bit r9
+        nanoSleep time1ms
         mov r9,  #0b1010010110 @ d
         WriteData10bit r9
+        nanoSleep time1ms
         mov r9,  #0b1111110110 @ o
         WriteData10bit r9
+        nanoSleep time1ms
         mov r9,  #0b1001010111 @ r
         WriteData10bit r9
+        nanoSleep time1ms
         mov r9,  #0b1001111010  @:
         WriteData10bit r9
 .endm
@@ -427,27 +438,30 @@
         WriteData5bit #0b00010
         WriteData5bit #0b00000
         mov r9, #0b0000001000 @00010 001XX
-        WriteData10bit r9 
-        mov r9, #0b0000000001 @00010 001XX
-        WriteData10bit r9 
-        mov r9, #0b0000000110 @00010 001XX
-        WriteData10bit r9 
-        mov r9, #0b0000001110 @00000 001000 
+        WriteData10bit r9
+        mov r9, #0b0000000000 @00010 001XX
         WriteData10bit r9
         mov r9, #0b0000000110 @00010 001XX
-        WriteData10bit r9 
-        @DisplayOff 
+        WriteData10bit r9
+        mov r9, #0b0000001110 @00000 001000
+        WriteData10bit r9
+        mov r9, #0b0000000110 @00010 001XX
+        WriteData10bit r9
+        @DisplayOff
         @clearLCD
-        @ModeSet 
+        @ModeSet
         @DisplayOnOff
 .endm
 .data
 
-time5ms: .word 0 
+tempo16digitos:
+        .word 0x3FFFFFF
+
+time5ms: .word 0
          .word 5000000
-time1ms: .word 0 
+time1ms: .word 0
          .word 1000000
-time100us:.word 0 
+time100us:.word 0
           .word 150000
 time450ns:
         .word 0
