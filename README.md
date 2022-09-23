@@ -6,7 +6,7 @@ Esse projeto tem por objetivo a construção de um temporizador de valores intei
 1. [Pré-requisitos](#pré-requisitos)
 2. [Passo a Passo](#passo-a-passo)
 3. [Debugando com o GDB](#debugando-com-o-gdb)
-4. Referências(#referencias)
+4. [Referências](#referências)
 
 ## Pré-requisitos
 - Raspberry Pi W Zero
