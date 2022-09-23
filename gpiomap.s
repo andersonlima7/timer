@@ -1,4 +1,10 @@
-                                                                                                                                                                                                                 
+
+@ Temporizador em um Display LCD
+@ Autores: Antony Araujo e Anderson Lima
+@ Disciplina: MI - Sistemas Digitais
+@ Data: 23/09/2022
+
+
 @ Various macros to access the GPIO pins
 @ on the Raspberry Pi.
 @
