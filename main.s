@@ -16,21 +16,33 @@
         WriteNumber r10
 .endm
 
-_start:
-        mapMem @ Chama a funcao presente em gpiomap.s responsavel por realizar o mapeamento dos pinos
 
-        @ Definicao dos pinos como entradas a partir da macro presente em gpiomap.s
-        GPIODirectionIn pin5
-        GPIODirectionIn pin19
-        GPIODirectionIn pin26
-
-        @ Definicao dos pinos como saidas a partir da macro presente em gpiomap.s
+@ Definicao dos pinos como saidas a partir da macro presente em gpiomap.s
+.macro SetOutputs
         GPIODirectionOut D4
         GPIODirectionOut D5
         GPIODirectionOut D6
         GPIODirectionOut D7
         GPIODirectionOut RS
-        GPIODirectionOut Es
+        GPIODirectionOut E
+.endm
+
+
+@ Definicao dos pinos como entradas a partir da macro presente em gpiomap.s
+.macro SetInputs
+        GPIODirectionIn pin5
+        GPIODirectionIn pin19
+        GPIODirectionIn pin26
+.endm
+
+_start:
+        mapMem @ Chama a funcao presente em gpiomap.s responsavel por realizar o mapeamento dos pinos
+
+        @ Define os pinos dos botões como entradas.
+        SetInputs
+        
+        @ Define os pinos do display como saídas.
+        SetOutputs
 
         @ Chama macro responsavel por inicializar o display LCD (presente no arquivo display.s)
         Initialization
@@ -56,7 +68,7 @@ loop:
     bne _start @se o botao de resetar tiver sido pressionado, o processador retorna ao comeco, saindo do laco
 
     @ Termina o programa
-    GPIOReadRegister pin19 @Realiza a leitura do pino
+    GPIOReadRegister pin5 @Realiza a leitura do pino
     cmp r0, r3 @Compara o valor capturado
     bne endmessage @Exibe uma mensagem caso o botao para finalizar o contador tenha sido pressionado
     
@@ -68,9 +80,7 @@ count:
         @ Inicia o contador
 
         @Carrega-se os botoes para capturar entradas
-        GPIODirectionIn pin5
-        GPIODirectionIn pin19
-        GPIODirectionIn pin26        
+        SetInputs     
 
         nanoSleep time1s @Realiza a funcao do temporizador de contar a cada 1 segundo
         clearLCD @ limpa o display para exibir o valor atual do temporizador
@@ -95,14 +105,7 @@ count:
 @label que realiza a divisao
 divisions:
         push {lr} @coloca na pilha o registrador LR (Link Register) - cria um indicador de retorno na pilha para onde o PC deve voltar após a execução
-        
-        GPIODirectionOut D4
-        GPIODirectionOut D5
-        GPIODirectionOut D6
-        GPIODirectionOut D7
-        GPIODirectionOut RS
-        GPIODirectionOut Es
-
+        SetOutputs
         mov r7, #10
         division r5, r7         @ realiza a divisao do valor dividendo atual por 10
         WriteNumber r11         @ escreve o 3 | escreve o 2
