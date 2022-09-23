@@ -1,4 +1,7 @@
-@ Programa para receber uma entrada de um botão (pino 5) e ligar um led (pino 12)
+@ Temporizador em um Display LCD
+@ Autores: Antony 
+@ Disciplina: MI - Sistemas Digitais
+@ Data: 23/09/2022
 
 .include "gpiomap.s"
 .include "display.s"
@@ -6,141 +9,114 @@
 
 .global _start
 
-
-.macro Write2Digits
-        mov r7, #10
-        division r6, r7
-        WriteNumber r10 @ Dezena
-        WriteNumber r11 @ Unidade
-.endm
-
-.macro SetInputs
-        GPIODirectionIn pin5
-        GPIODirectionIn pin19
-        GPIODirectionIn pin26
-.endm
-.macro SetOutputs
-        GPIODirectionOut D4
-        GPIODirectionOut D5
-        GPIODirectionOut D6
-        GPIODirectionOut D7
-        GPIODirectionOut RS
-        GPIODirectionOut E
-.endm
-
-
-@ Escreve números de 3 dígitos no display, quanto mais dígitos, mais divisões temos que fazer.
-
+@ Exibe um número/dígito no display a partir do resto da divisão do valor informado por 10
 .macro WriteDigits
         mov r5, r6
         bl divisions
         WriteNumber r10
 .endm
 
-.macro Write3Digits
-        mov r7, #10
-        division r6, r7 @ 123/10 -> r0=12 e r1=3
-        mov r5, r11 @ Salva o valor da unidade
-        mov r4, r10 @ Salva o r10, r4=12
-        mov r7, #10
-        division r4, r7 @ 12/10 -> r0=1 e r1=2
-        WriteNumber r10 @ Centena
-        WriteNumber r11 @ Dezena
-        WriteNumber r5 @ Unidade
-.endm
-
-
 _start:
-        mapMem @ mapemaento
+        mapMem @ Chama a funcao presente em gpiomap.s responsavel por realizar o mapeamento dos pinos
 
-        @ Definicao dos pinos como entradas
-        SetInputs
-        @ Definicao dos pinos como saidas
-        SetOutputs
+        @ Definicao dos pinos como entradas a partir da macro presente em gpiomap.s
+        GPIODirectionIn pin5
+        GPIODirectionIn pin19
+        GPIODirectionIn pin26
 
+        @ Definicao dos pinos como saidas a partir da macro presente em gpiomap.s
+        GPIODirectionOut D4
+        GPIODirectionOut D5
+        GPIODirectionOut D6
+        GPIODirectionOut D7
+        GPIODirectionOut RS
+        GPIODirectionOut Es
+
+        @ Chama macro responsavel por inicializar o display LCD (presente no arquivo display.s)
         Initialization
 
-        @ variavel do loop
+        @ Chama macro responsavel por limpar o display LCD (presente no arquivo display.s)
         clearLCD
 
-        ldr r6, =tempo16digitos
-        mov r7, #10
-        WriteDigits    
+        ldr r6, =tempo16digitos @tempo que será contado pelo temporizador
+        mov r7, #10 @valor pelo qual sera dividido o tempo atual para obter o resto e exibir na tela
+        WriteDigits @ exibe o numero
 
+@ laco principal que realiza a execucao e verificacao continua do temporizador
 loop:
     @Inicia a contagem
     nanoSleep time1s
-    GPIOReadRegister pin19
-    cmp r0, r3
-    bne count
+    GPIOReadRegister pin19 @Realiza a leitura do pino
+    cmp r0, r3 @compara o valor capturado do botao
+    bne count @se o botao nao tiver sido pressionado, segue a contagem
 
     @ Reinicia o programa
-    GPIOReadRegister pin26
-    cmp r0, r3
-    bne _start
+    GPIOReadRegister pin26 @realiza a leitura do pino
+    cmp r0, r3 @compara o valor capturado do botao
+    bne _start @se o botao de resetar tiver sido pressionado, o processador retorna ao comeco, saindo do laco
 
     @ Termina o programa
-    GPIOReadRegister pin19
-    cmp r0, r3
-    bne endmessage
-    b loop    
+    GPIOReadRegister pin19 @Realiza a leitura do pino
+    cmp r0, r3 @Compara o valor capturado
+    bne endmessage @Exibe uma mensagem caso o botao para finalizar o contador tenha sido pressionado
+    
+    
+    b loop @em nenhum dos casos, apenas repete
 
-
+@laco secundario que coloca o temporizador em modo contagem (decrescente)
 count:
-        SetInputs        
+        @ Inicia o contador
 
-        nanoSleep time1s
-        clearLCD
-        sub r6, #1        
+        @Carrega-se os botoes para capturar entradas
+        GPIODirectionIn pin5
+        GPIODirectionIn pin19
+        GPIODirectionIn pin26        
+
+        nanoSleep time1s @Realiza a funcao do temporizador de contar a cada 1 segundo
+        clearLCD @ limpa o display para exibir o valor atual do temporizador
+        sub r6, #1 @subtrai um do valor a ser exibido no display
         
-        GPIOReadRegister pin26
-        cmp r0, r3
-        bne _start
+        @as tres instrucoes seguintes reiniciam o contador
+        GPIOReadRegister pin26 @captura o valor do pino 26
+        cmp r0, r3 @compara
+        bne _start @ se o botao referente ao pino 26 for pressionado o timer reseta
         
-        WriteDigits
+        WriteDigits @exibe o valor atual do temporizador no display
 
-        @ Verifica o botão de pausar
-        GPIOReadRegister pin19
-        cmp r0, r3
-        bne loop
+        @ as 3 instrucoes seguintes pausam o cotnador
+        GPIOReadRegister pin19 @captura o valor
+        cmp r0, r3 @compara
+        bne loop @se o botao se iniciar/pausar tiver sido pressionado o temporizador é pausado e retorna ao laco principal
         
-        cmp r6, #0
-        bhi count
-        b loop
+        cmp r6, #0 @compara o valor atual do temporizador e zero
+        bhi count @repete o laco se o valor atual do temporizador for maior que zero
+        b loop @ senao retorna ao laco principal
 
-@ Reinicia o contador
-.macro reset
-       GPIOReadRegister pin26
-       cmp r0, r3
-       bne _start
-.endm
-
-@ Pausa o contador
-.macro stop
-        GPIOReadRegister pin5
-        cmp r0, r3
-        bne loop
-.endm
-
-
+@label que realiza a divisao
 divisions:
-        push {lr}
-        SetOutputs
+        push {lr} @coloca na pilha o registrador LR (Link Register) - cria um indicador de retorno na pilha para onde o PC deve voltar após a execução
+        
+        GPIODirectionOut D4
+        GPIODirectionOut D5
+        GPIODirectionOut D6
+        GPIODirectionOut D7
+        GPIODirectionOut RS
+        GPIODirectionOut Es
+
         mov r7, #10
-        division r5, r7         @ 123/10 -> r10=12 e r11=3  | 12/10 -> r10=1 e r11=2
+        division r5, r7         @ realiza a divisao do valor dividendo atual por 10
         WriteNumber r11         @ escreve o 3 | escreve o 2
-        cursorDisplayShift #0, #0
-        cursorDisplayShift #1, #1
-        cursorDisplayShift #0, #0
-        @cursorDisplayShift #1, #1 @ Display shift to right
-        @cursorDisplayShift #0, #0
-        mov r5, r10
-        cmp r5, #10
-        pop {lr}
-        bxlo lr         @r5 < 10, acabou
-        b divisions
+        cursorDisplayShift #0, #0 @Desloca o cursor para esquerda
+        cursorDisplayShift #1, #1 @Desloca todo o conteudo do display para a direita (liberando a esquerda)
+        cursorDisplayShift #0, #0 @Desloca o cursor para a esquerda
+        
+        mov r5, r10 @atualiza o dividendo atual para que seja o resultado da divisao realizada
+        cmp r5, #10 @compara o dividendo com 10
+        pop {lr} @remove o registrador LR da pilha
+        bxlo lr         @ casoo valor  r5 < 10 entao retorna para o ponto indicado pelo link register
+        b divisions @ senao continua fazendo a divisao
 
-
+@exibe uma mensagem no display ao pressionar o botao de parada com a menssagem @FIM :)
 endmessage:
         nanoSleep time1s
         mov r9, #0b1010010001  @F
@@ -160,6 +136,6 @@ endmessage:
 
 
 _end:
-    mov R0, #0 @ Use 0 return code
-    mov R7, #1 @ Command code 1 terms
-    svc 0 @ Linux command to terminate
+    mov R0, #0 @ Usa o código de retorno 0
+    mov R7, #1 @ Define o comando de codigo 1
+    svc 0 @ Realiza a chamada de funcao do linux para finalizar
