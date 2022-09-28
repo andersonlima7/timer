@@ -10,6 +10,10 @@
 .global _start
 
 @ Exibe um número/dígito no display a partir do resto da divisão do valor informado por 10
+@ r5 - Copia do valor do contador.
+@ r6 - Contador
+@ r10 - Digito a ser exibido no display.
+
 .macro WriteDigits
         mov r5, r6
         bl divisions
@@ -50,7 +54,8 @@ _start:
         @ Chama macro responsavel por limpar o display LCD (presente no arquivo display.s)
         clearLCD
 
-        ldr r6, =tempo16digitos @tempo que será contado pelo temporizador
+        ldr r6, =tempoInicial @tempo que será contado pelo temporizador
+        ldr r6, [r6]
         mov r7, #10 @valor pelo qual sera dividido o tempo atual para obter o resto e exibir na tela
         WriteDigits @ exibe o numero
 
@@ -70,7 +75,7 @@ loop:
     @ Termina o programa
     GPIOReadRegister pin5 @Realiza a leitura do pino
     cmp r0, r3 @Compara o valor capturado
-    bne endmessage @Exibe uma mensagem caso o botao para finalizar o contador tenha sido pressionado
+    bne _end  @Chama o prodecimento para finalizar a execução do código. (EXTRA!)
     
     
     b loop @em nenhum dos casos, apenas repete
@@ -86,17 +91,18 @@ count:
         clearLCD @ limpa o display para exibir o valor atual do temporizador
         sub r6, #1 @subtrai um do valor a ser exibido no display
         
-        @as tres instrucoes seguintes reiniciam o contador
-        GPIOReadRegister pin26 @captura o valor do pino 26
-        cmp r0, r3 @compara
-        bne _start @ se o botao referente ao pino 26 for pressionado o timer reseta
         
         WriteDigits @exibe o valor atual do temporizador no display
-
         @ as 3 instrucoes seguintes pausam o cotnador
         GPIOReadRegister pin19 @captura o valor
         cmp r0, r3 @compara
         bne loop @se o botao se iniciar/pausar tiver sido pressionado o temporizador é pausado e retorna ao laco principal
+        
+        @as tres instrucoes seguintes reiniciam o contador
+        GPIOReadRegister pin26 @captura o valor do pino 26
+        cmp r0, r3 @compara
+        bne _start @ se o botao referente ao pino 26 for pressionado o timer reseta
+
         
         cmp r6, #0 @compara o valor atual do temporizador e zero
         bhi count @repete o laco se o valor atual do temporizador for maior que zero
@@ -118,25 +124,6 @@ divisions:
         pop {lr} @remove o registrador LR da pilha
         bxlo lr         @ casoo valor  r5 < 10 entao retorna para o ponto indicado pelo link register
         b divisions @ senao continua fazendo a divisao
-
-@exibe uma mensagem no display ao pressionar o botao de parada com a menssagem @FIM :)
-endmessage:
-        nanoSleep time1s
-        mov r9, #0b1010010001  @F
-        WriteData10bit r9
-        mov r9, #0b1010011001  @I
-        WriteData10bit r9
-        mov r9, #0b1010011101  @M
-        WriteData10bit r9
-        mov r9, #0b1000110000  @
-        WriteData10bit r9
-        mov r9, #0b1001111010  @:
-        WriteData10bit r9
-        mov r9, #0b1001011001  @ )
-        WriteData10bit r9
-        nanoSleep time1s
-        b _end
-
 
 _end:
     mov R0, #0 @ Usa o código de retorno 0

@@ -26,7 +26,8 @@
 
 
 
-@ Macro to map memory for GPIO Registers
+@ Macro para fazer o mapeamento na memória dos pinos GPIO.
+@ Autor: Sthepen Smith
 .macro mapMem
         ldr r0, =devmem
         mov r1, #0x1b0
@@ -53,6 +54,7 @@
 
 
 @ Define o pino como saída
+@ Autor: Sthepen Smith
 .macro GPIODirectionOut pin
         ldr r2, =\pin @ offset of select register 
         ldr r2, [r2] @ load the value  GPFSEL0 - GPFSEL1 - GPFSEL2  
@@ -71,7 +73,7 @@
         .ltorg
 .endm
 
-@ Author: A.L
+
 @ Define o pino como entrada
 .macro GPIODirectionIn pin
         ldr r2, =\pin @ offset of select register
@@ -87,6 +89,7 @@
         .ltorg
 .endm
 
+@ Define o pino como nível lógico alto ou baixo.
 .macro GPIOTurn pin value
         mov r2, r8
         mov r0, \value
@@ -101,7 +104,8 @@
         str r0, [r2] @ write to the register
 .endm
 
-
+@ Define o pino como nível lógico alto.
+@ Autor: Sthepen Smith
 .macro GPIOTurnOn pin
          mov r2, r8 @ address of gpio regs
          add r2, #setregoffset @ off to set reg
@@ -113,6 +117,8 @@
          str r0, [r2] @ write to the register
 .endm
 
+@ Define o pino como nível lógico baixo.
+@ Autor: Sthepen Smith
 .macro GPIOTurnOff pin
          mov r2, r8 @ address of gpio regs
          add r2, #clrregoffset @ off set of clr reg
@@ -157,24 +163,14 @@
 .endm
 
 
-.macro print 
-    mov r0, #1 @ 1 = StdOut
-    ldr r1, =string @ string to print
-    mov r2, #13 @ length of our string
-    mov r7, #4 @ linux write system call
-    svc 0 @ Call linux to print
-.endm
-
-
 
 .data
 timesec: .word 4
 timenano: .word 000000000
 devmem: .asciz "/dev/mem"
-string: .ascii "Entrou no loop \n "
 
 
-@ mem address of gpio register / 4096
+@ Endereço de memória dos registradores GPIO.
 
 gpioaddr: .word 0x20200
 

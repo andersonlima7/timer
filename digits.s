@@ -4,18 +4,6 @@
 @ Data: 23/09/2022
 
 @ Vários macros
-
-@ Acessa a coluna dos digitos no display
-.macro digits 
-    @ 0 0 1 1
-    GPIOTurnOn D4 @DB4 = 1
-    GPIOTurnOn D5 @ DB5 = 1
-    GPIOTurnOff D6 @DB6 = 0
-    GPIOTurnOff D7 @DB7 = 0
-    GPIOTurnOn RS @RS = 1
-    enable
-.endm
-
 @ Divisão de inteiros
 @ N - Numerador
 @ D - Denominador
